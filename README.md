@@ -13,6 +13,9 @@ This project is configured for my personal use, it contains some workarounds lik
 0: Middle moue button
 +: Right mouse button
 
+9: Scroll up
+3: Scroll down
+
 Shift + movement buttons = faster move
 
 Pause: disable/enable hanpad (which is disabled by default)
