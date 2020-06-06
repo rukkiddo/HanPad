@@ -5,12 +5,12 @@ from pynput import keyboard
 from pynput.mouse import Button, Controller
 from pathlib import Path
 import xml.etree.ElementTree as ET
-import shutil, os
+import os
 import atexit
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 shortcuts_folder = ROOT_DIR + "/shortcuts/xfce"
-shortcuts_bak_file = ROOT_DIR + "/shortcuts/xfce/xfce4-keyboard-shortcuts.xml"
+# shortcuts_bak_file = ROOT_DIR + "/shortcuts/xfce/xfce4-keyboard-shortcuts.xml"
 shortcuts_xml = os.path.expanduser("~/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml")
 
 mouse = Controller()
@@ -59,7 +59,6 @@ mask_list = ["KP_Left",
 
 def on_key_release(key):
     c_key = str(key)
-    print(c_key)
     global acc
     if pause:
         return
@@ -123,7 +122,6 @@ def on_key_press(key):
         if move:
             mouse.move(x,y)
         if scroll:
-            print(scroll_y)
             mouse.scroll(0, scroll_y)
         if c_key == "'0'":
             mouse.press(Button.middle)
@@ -131,33 +129,36 @@ def on_key_press(key):
         mouse.press(Button.left)
 
 def enable():
-    print("enabling")
-    global pause, shortcuts_folder, shortcuts_xml, shortcuts_bak_file, mask_list
+    global pause, shortcuts_folder, shortcuts_xml, mask_list
     pause = False
     
     Path(shortcuts_folder).mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(shortcuts_xml, shortcuts_bak_file)
 
-    tree = ET.parse(shortcuts_bak_file)
+    tree = ET.parse(shortcuts_xml)
     root = tree.getroot()
-    print(root)
     parent = root.find("./property[@name='commands']/property[@name='custom']")
+    lovesh = ROOT_DIR + "/love.sh"
     for mask in mask_list:
         prop = ET.Element("property")
         prop.attrib["name"] = mask
         prop.attrib["type"] = "string"
-        prop.attrib["value"] = os.path.expanduser(ROOT_DIR + "/love.sh")
+        prop.attrib["value"] = os.path.expanduser(lovesh)
         parent.append(prop)
     result = ET.tostring(root)
-    print(result)
     tree.write(shortcuts_xml)
     os.system("killall xfconfd & /usr/lib/xfce4/xfconf/xfconfd & xfsettingsd --replace")
 
 def disable():
-    print("disabling")
     global pause
     pause = True
-    shutil.copyfile(shortcuts_bak_file, shortcuts_xml)
+    tree = ET.parse(shortcuts_xml)
+    root = tree.getroot()
+    lovesh = ROOT_DIR + "/love.sh"
+    parent = root.find("./property[@name='commands']/property[@name='custom']")
+    for el in root.findall("./property[@name='commands']/property[@name='custom']/property[@value='"+lovesh+"']"):
+        parent.remove(el)
+    result = ET.tostring(root)
+    tree.write(shortcuts_xml)
     os.system("killall xfconfd & /usr/lib/xfce4/xfconf/xfconfd & xfsettingsd --replace")
 
 atexit.register(disable)
