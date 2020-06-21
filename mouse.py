@@ -162,6 +162,7 @@ def disable():
     os.system("killall xfconfd & /usr/lib/xfce4/xfconf/xfconfd & xfsettingsd --replace")
 
 atexit.register(disable)
+disable()
 
 with keyboard.Listener(on_release = on_key_release, on_press = on_key_press) as listener:
     listener.join()
